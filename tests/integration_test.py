@@ -694,3 +694,36 @@ def test_no_debug(caplog, runner, open_changelog):
     assert result.exit_code == 0, result.stderr
     assert result.output == ""
     assert "Logging level has been set to DEBUG" not in caplog.text
+
+@pytest.mark.parametrize(
+    "commands",
+    [
+        [
+            'git commit --allow-empty -q -m "fix: Some file fix"',
+            "git tag 1.0.0",
+            "git remote add origin https://github.com/Michael-F-Bryan/auto-changelog.git",
+        ]
+    ],
+)
+def test_commit_message_with_ignored_words(runner, open_changelog):
+    result = runner.invoke(main, ["--ignore", "merge"])
+    assert result.exit_code == 0, result.stderr
+    changelog = open_changelog().read()
+    assert "merge best test" not in changelog
+
+
+@pytest.mark.parametrize(
+    "commands",
+    [
+        [
+            'git commit --allow-empty -q -m "fix: Some file fix"',
+            "git tag 1.0.0",
+            "git remote add origin https://github.com/Michael-F-Bryan/auto-changelog.git",
+        ]
+    ],
+)
+def test_commit_message_without_ignored_words(runner, open_changelog):
+    result = runner.invoke(main, ["--ignore", "merge"])
+    assert result.exit_code == 0, result.stderr
+    changelog = open_changelog().read()
+    assert "any commit" in changelog
